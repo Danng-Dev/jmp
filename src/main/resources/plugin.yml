@@ -1,0 +1,33 @@
+name: JMP
+version: '1.0-SNAPSHOT'
+main: top.archiem.jmp.JMP
+api-version: '1.21'
+prefix: JMP
+authors: [ DanngDev ]
+description: A plugin to change the join mssage on your server
+website: archiem.top
+permissions:
+    jmp.premium.1:
+      default: false
+    jmp.premium.2:
+      default: false
+    jmp.premium.3:
+      default: false
+    jmp.premium.4:
+      default: false
+    jmp.cmd:
+      default: op
+      description: "The permisssion node for all commands"
+    jmp.silent:
+      default: false
+      description: "No leave/join messages for this person"
+
+commands:
+  jmp:
+    permission: JMP.cmd
+    aliases: [joinmessageplus]
+    usage: "/joinmessageplus <arg>"
+    permission-message: "You do not have permission to use this command"
+    description: "Join message plus command"
+
+softdepend: [PlaceholderAPI]

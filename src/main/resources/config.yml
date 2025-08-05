@@ -1,0 +1,17 @@
+main:
+    sendmessagetoplayer: true
+
+    messages:
+      join: "&aWelcome %player% to the server!"
+      leave: "&c%player% has left the server!"
+
+    messageplayer:
+      join: "&eHello %player%, enjoy your stay!"
+      leave: "&eGoodbye %player%, see you next time!"
+      silent: "<gold> %player% you ave silentjoin enabled"
+
+    premium:
+      "1": "&6[VIP] %player% has joined the game!"
+      "2": "&b[ELITE] %player% has joined the game!"
+      "3": "&d[LEGEND] %player% has joined the game!"
+      "4": "&c[OWNER] %player% has joined the server!"
