@@ -76,10 +76,10 @@
                             <!-- you can use an empty string for all the imports you didn't specify explicitly, '|' to join group without blank line, and '\#` prefix for static imports. -->
                             <semanticSort>false</semanticSort> <!-- Optional, default false. Sort by package, then class, then member (for static imports). Splitting is based on common conventions (packages are lower case, classes start with upper case). Use <treatAsPackage> and <treatAsClass> for exceptions. -->
                             <treatAsPackage> <!-- Packages starting with upper case letters. -->
-                                <package>com.example.MyPackage</package>
+                                <package>top.archiem.jmp</package>
                             </treatAsPackage>
                             <treatAsClass> <!-- Classes starting with lower case letters. -->
-                                <class>com.example.myClass</class>
+                                <class>top.archiem.jmp.textFormat</class>
                             </treatAsClass>
                         </importOrder>
 
