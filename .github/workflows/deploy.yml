@@ -1,0 +1,73 @@
+name: Build, Test, and Deploy to Modrinth
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Build with Maven
+        run: mvn clean package
+
+      - name: Run Tests
+        run: mvn test
+
+      - name: Lint Java Code (Checkstyle)
+        run: |
+          mvn checkstyle:checkstyle
+          cat target/checkstyle-result.xml || true
+
+      - name: Generate metadata.json
+        run: |
+          VERSION=$(date +"%Y.%m.%d.%H%M")
+          echo "Generated version: $VERSION"
+      
+          # Read changelog.md content, escape newlines and quotes
+          CHANGELOG=$(sed ':a;N;$!ba;s/\n/\\n/g' changelog.md | sed 's/"/\\"/g')
+      
+          # Extract paper-api version from pom.xml
+          PAPER_VERSION_FULL=$(xmllint --xpath "string(//dependency[artifactId='paper-api']/version)" pom.xml)
+          
+          # Trim everything after first '-' to get just version number
+          PAPER_VERSION=$(echo "$PAPER_VERSION_FULL" | cut -d'-' -f1)
+      
+          echo "Paper API version detected: $PAPER_VERSION"
+      
+          cat <<EOF > metadata.json
+          {
+            "name": "Plugin $VERSION",
+            "version_number": "$VERSION",
+            "changelog": "$CHANGELOG",
+            "game_versions": ["$PAPER_VERSION"],
+            "version_type": "release",
+            "loaders": ["fabric"],
+            "featured": true,
+            "status": "listed",
+            "file_parts": ["file0"],
+            "primary_file": "file0",
+            "project_id": "${{ secrets.MODRINTH_PROJECT_ID }}",
+            "author_id": "${{ secrets.MODRINTH_AUTHOR_ID }}",
+            "date_published": "$(date --iso-8601=seconds)",
+            "downloads": 0
+          }
+          EOF
+
+
+#      - name: Upload to Modrinth
+#        run: |
+#          curl -X POST https://api.modrinth.com/v2/version \
+#            -H "Authorization: Bearer ${{ secrets.MODRINTH_TOKEN }}" \
+#            -F "data=@metadata.json;type=application/json" \
+#            -F "file0=@target/$(ls target | grep '.jar$' | head -n 1)"
