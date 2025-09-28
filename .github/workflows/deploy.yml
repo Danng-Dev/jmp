@@ -21,8 +21,8 @@ jobs:
       - name: Build with Maven
         run: mvn clean package
 
-      - name: Run Tests
-        run: mvn test
+      - name: Run Unit Tests (Skip Integration Tests)
+        run: mvn test -DskipITs
 
       - name: Lint Java Code (Checkstyle)
         run: |
@@ -33,18 +33,18 @@ jobs:
         run: |
           VERSION=$(date +"%Y.%m.%d.%H%M")
           echo "Generated version: $VERSION"
-      
+          
           # Read changelog.md content, escape newlines and quotes
           CHANGELOG=$(sed ':a;N;$!ba;s/\n/\\n/g' changelog.md | sed 's/"/\\"/g')
-      
+          
           # Extract paper-api version from pom.xml
           PAPER_VERSION_FULL=$(xmllint --xpath "string(//dependency[artifactId='paper-api']/version)" pom.xml)
           
           # Trim everything after first '-' to get just version number
           PAPER_VERSION=$(echo "$PAPER_VERSION_FULL" | cut -d'-' -f1)
-      
+          
           echo "Paper API version detected: $PAPER_VERSION"
-      
+          
           cat <<EOF > metadata.json
           {
             "name": "Plugin $VERSION",
@@ -52,7 +52,7 @@ jobs:
             "changelog": "$CHANGELOG",
             "game_versions": ["$PAPER_VERSION"],
             "version_type": "release",
-            "loaders": ["fabric"],
+            "loaders": ["paper"],
             "featured": true,
             "status": "listed",
             "file_parts": ["file0"],
@@ -64,10 +64,11 @@ jobs:
           }
           EOF
 
-
 #      - name: Upload to Modrinth
 #        run: |
+#          JAR_FILE=$(ls target/*.jar | head -n 1)
+#          echo "Uploading JAR file: $JAR_FILE"
 #          curl -X POST https://api.modrinth.com/v2/version \
 #            -H "Authorization: Bearer ${{ secrets.MODRINTH_TOKEN }}" \
 #            -F "data=@metadata.json;type=application/json" \
-#            -F "file0=@target/$(ls target | grep '.jar$' | head -n 1)"
+#            -F "file0=@$JAR_FILE"
