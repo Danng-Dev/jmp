@@ -1,16 +1,21 @@
 version: 2.1
 
 jobs:
-  say-hello:
+  checkstyle:
     docker:
       - image: cimg/openjdk:21.0.8
     steps:
       - checkout
       - run:
-          name: "Say hello"
-          command: "echo Hello, World!"
+          name: "Install Maven"
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y maven
+      - run:
+          name: "Run Checkstyle"
+          command: "mvn checkstyle:check"
 
 workflows:
-  say-hello-workflow:
+  checkstyle-workflow:
     jobs:
-      - say-hello
+      - checkstyle
