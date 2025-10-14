@@ -6,7 +6,7 @@ import be.seeseemelk.mockbukkit.entity.PlayerMock;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.Plugin;
 import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -34,8 +34,17 @@ class JMPTest {
     }
 
     @Test
-    void testOnEnableSetsPapienabledFalseWhenNoPlaceholderAPI() {
-        assertFalse(plugin.papienabled, "PlaceholderAPI should not be detected");
+    void testPapienabledFalseWithoutPlaceholderAPI() {
+        assertFalse(plugin.papienabled);
+    }
+
+    @Test
+    void testPapienabledTrueWithPlaceholderAPI() {
+        // Create a fake PlaceholderAPI plugin
+        server.getPluginManager().registerMockPlugin("PlaceholderAPI");
+        JMP plugin2 = MockBukkit.load(JMP.class);
+        assertTrue(plugin2.papienabled);
+        MockBukkit.unmock();
     }
 
     @Test
@@ -54,7 +63,6 @@ class JMPTest {
 
         server.getPluginManager().callEvent(event);
 
-        // Player should receive formatted join message
         player.assertSaid("Hello Steve!");
         assertNotNull(event.joinMessage());
     }
@@ -85,14 +93,12 @@ class JMPTest {
         PlayerJoinEvent event = new PlayerJoinEvent(player, null);
         server.getPluginManager().callEvent(event);
 
-        // Silent players get no join message but do get a private message
         assertNull(event.joinMessage());
         player.assertSaid("Silent join.");
     }
 
     @Test
     void testPluginRegistersListener() {
-        PluginManager pm = server.getPluginManager();
-        assertTrue(pm.isPluginEnabled(plugin));
+        assertTrue(server.getPluginManager().isPluginEnabled(plugin));
     }
 }
