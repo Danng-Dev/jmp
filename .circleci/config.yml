@@ -7,6 +7,9 @@ executors:
     working_directory: ~/project
 
 jobs:
+  # --------------------------
+  # INSTALL MAVEN / SETUP JOB
+  # --------------------------
   install-maven:
     executor: maven-executor
     steps:
@@ -20,12 +23,14 @@ jobs:
             sudo update-ca-certificates -f
       - run:
           name: "Install Maven"
-          command: |
-            sudo apt-get install -y maven
+          command: sudo apt-get install -y maven
       - persist_to_workspace:
           root: ~/project
           paths: .
 
+  # --------------------------
+  # CHECKSTYLE
+  # --------------------------
   checkstyle:
     executor: maven-executor
     steps:
@@ -33,13 +38,117 @@ jobs:
           at: ~/project
       - run:
           name: "Run Checkstyle"
-          command: "mvn checkstyle:check"
+          command: mvn checkstyle:check
+      - store_artifacts:
+          path: target
+          destination: checkstyle-results
 
+  # --------------------------
+  # TEST JOBS
+  # --------------------------
+  jmp-tests:
+    executor: maven-executor
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: "Run JMP plugin tests"
+          command: mvn -Dtest=top.archiem.jmp.JMPTest test jacoco:report
+      - store_test_results:
+          path: target/surefire-reports
+      - store_artifacts:
+          path: target/surefire-reports
+          destination: jmp-test-results
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - target/site/jacoco
+
+  maincommand-tests:
+    executor: maven-executor
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: "Run MainCommand tests"
+          command: mvn -Dtest=top.archiem.jmp.MainCommandTest test jacoco:report
+      - store_test_results:
+          path: target/surefire-reports
+      - store_artifacts:
+          path: target/surefire-reports
+          destination: maincommand-test-results
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - target/site/jacoco
+
+  textformat-tests:
+    executor: maven-executor
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: "Run textFormat tests (includes colour & placeholder checks)"
+          command: mvn -Dtest=top.archiem.jmp.textFormatTest test jacoco:report
+      - store_test_results:
+          path: target/surefire-reports
+      - store_artifacts:
+          path: target/surefire-reports
+          destination: textformat-test-results
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - target/site/jacoco
+
+  # --------------------------
+  # MERGE COVERAGE REPORTS
+  # --------------------------
+  merge-coverage:
+    executor: maven-executor
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: "Merge JaCoCo coverage reports"
+          command: |
+            mkdir -p target/merged-jacoco
+            find . -type f -name 'jacoco.xml' -exec cp {} target/merged-jacoco/ \;
+            echo "All coverage XML files collected into target/merged-jacoco"
+            echo "To combine them, use a tool like jacoco-merge or upload to Codecov."
+      - store_artifacts:
+          path: target/site/jacoco
+          destination: coverage-report
+      - store_artifacts:
+          path: target/merged-jacoco
+          destination: merged-coverage
+
+# --------------------------
+# WORKFLOW
+# --------------------------
 workflows:
   version: 2
   mvn-install-and-test:
     jobs:
       - install-maven
+
       - checkstyle:
           requires:
             - install-maven
+
+      - jmp-tests:
+          requires:
+            - install-maven
+
+      - maincommand-tests:
+          requires:
+            - install-maven
+
+      - textformat-tests:
+          requires:
+            - install-maven
+
+      - merge-coverage:
+          requires:
+            - jmp-tests
+            - maincommand-tests
+            - textformat-tests
