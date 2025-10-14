@@ -14,6 +14,9 @@
     <properties>
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <mockbukkit.version>3.6.0</mockbukkit.version>
+        <junit.jupiter.version>5.10.2</junit.jupiter.version>
+        <mockito.version>5.11.0</mockito.version>
     </properties>
 
     <build>
@@ -170,5 +173,33 @@
             <artifactId>adventure-text-minimessage</artifactId>
             <version>4.17.0</version>
         </dependency>
+        <!-- Testing -->
+             <dependency>
+               <groupId>com.github.seeseemelk</groupId>
+               <artifactId>MockBukkit-v1.20</artifactId>
+               <version>${mockbukkit.version}</version>
+               <scope>test</scope>
+             </dependency>
+         
+             <dependency>
+               <groupId>org.junit.jupiter</groupId>
+               <artifactId>junit-jupiter</artifactId>
+               <version>${junit.jupiter.version}</version>
+               <scope>test</scope>
+             </dependency>
+         
+             <dependency>
+               <groupId>org.mockito</groupId>
+               <artifactId>mockito-core</artifactId>
+               <version>${mockito.version}</version>
+               <scope>test</scope>
+             </dependency>
+         
+             <dependency>
+               <groupId>org.mockito</groupId>
+               <artifactId>mockito-inline</artifactId>
+               <version>${mockito.version}</version>
+               <scope>test</scope>
+             </dependency>
     </dependencies>
 </project>
