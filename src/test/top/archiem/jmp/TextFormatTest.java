@@ -54,4 +54,53 @@ class textFormatTest {
             assertNotNull(result);
         }
     }
+    
+    @Test
+    void testLegacyColorCodesConvertedToComponentColor() {
+        Player player = Mockito.mock(Player.class);
+        Mockito.when(player.getName()).thenReturn("Steve");
+
+        textFormat tf = new textFormat(false);
+        Component result = tf.format("&aHello, %player%!", player);
+
+        // Extract plain text
+        String plain = PlainTextComponentSerializer.plainText().serialize(result);
+        assertEquals("Hello, Steve!", plain);
+
+        // Check color decoration
+        assertTrue(result.color().equals(NamedTextColor.GREEN),
+                "Expected &a (green) to result in NamedTextColor.GREEN");
+    }
+
+    @Test
+    void testMiniMessageTagsPreserved() {
+        Player player = Mockito.mock(Player.class);
+        Mockito.when(player.getName()).thenReturn("Alex");
+
+        textFormat tf = new textFormat(false);
+        Component result = tf.format("<red><bold>Warning</bold></red>", player);
+
+        // Check content
+        String plain = PlainTextComponentSerializer.plainText().serialize(result);
+        assertEquals("Warning", plain);
+
+        // Check formatting
+        assertEquals(NamedTextColor.RED, result.color());
+        assertTrue(result.hasDecoration(TextDecoration.BOLD));
+    }
+
+    @Test
+    void testMixedLegacyAndMiniMessageFormatting() {
+        Player player = Mockito.mock(Player.class);
+        Mockito.when(player.getName()).thenReturn("Alex");
+
+        textFormat tf = new textFormat(false);
+        Component result = tf.format("&6<bold>Hello %player%</bold>", player);
+
+        String plain = PlainTextComponentSerializer.plainText().serialize(result);
+        assertEquals("Hello Alex", plain);
+
+        assertEquals(NamedTextColor.GOLD, result.color());
+        assertTrue(result.hasDecoration(TextDecoration.BOLD));
+    }
 }
