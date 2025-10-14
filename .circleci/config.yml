@@ -14,6 +14,7 @@ jobs:
       - run:
           name: "Fix ca-certificates-java"
           command: |
+            sudo rm -rf /etc/ssl/certs/java/cacerts
             sudo apt-get update
             sudo apt-get install -y --reinstall ca-certificates-java
             sudo update-ca-certificates -f
