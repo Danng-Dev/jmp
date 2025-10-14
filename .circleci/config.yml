@@ -1,9 +1,14 @@
 version: 2.1
 
-jobs:
-  checkstyle:
+executors:
+  maven-executor:
     docker:
       - image: cimg/openjdk:21.0.8
+    working_directory: ~/project
+
+jobs:
+  install-maven:
+    executor: maven-executor
     steps:
       - checkout
       - run:
@@ -11,11 +16,24 @@ jobs:
           command: |
             sudo apt-get update
             sudo apt-get install -y maven
+      - persist_to_workspace:
+          root: ~/project
+          paths: .
+
+  checkstyle:
+    executor: maven-executor
+    steps:
+      - attach_workspace:
+          at: ~/project
       - run:
           name: "Run Checkstyle"
           command: "mvn checkstyle:check"
 
 workflows:
-  checkstyle-workflow:
+  version: 2
+  install-and-checkstyle:
     jobs:
-      - checkstyle
+      - install-maven
+      - checkstyle:
+          requires:
+            - install-maven
