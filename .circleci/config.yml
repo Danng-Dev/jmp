@@ -33,17 +33,7 @@ jobs:
           at: ~/project
       - run:
           name: "Run Checkstyle"
-          command: |
-            mvn checkstyle:check || echo "Checkstyle violations found" && exit 1
-
-  checkstyle-fix:
-    executor: maven-executor
-    steps:
-      - attach_workspace:
-          at: ~/project
-      - run:
-          name: "Fix Checkstyle Violations"
-          command: "mvn checkstyle:fix"
+          command: "mvn checkstyle:check"
 
 workflows:
   version: 2
@@ -53,6 +43,3 @@ workflows:
       - checkstyle:
           requires:
             - install-maven
-      - checkstyle-fix:
-          requires:
-            - checkstyle
