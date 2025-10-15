@@ -7,9 +7,6 @@ executors:
     working_directory: ~/project
 
 jobs:
-  # --------------------------
-  # INSTALL MAVEN / SETUP JOB
-  # --------------------------
   install-maven:
     executor: maven-executor
     steps:
@@ -28,9 +25,6 @@ jobs:
           root: ~/project
           paths: .
 
-  # --------------------------
-  # CHECKSTYLE
-  # --------------------------
   checkstyle:
     executor: maven-executor
     steps:
@@ -46,6 +40,7 @@ jobs:
   # --------------------------
   # TEST JOBS
   # --------------------------
+
   jmp-tests:
     executor: maven-executor
     steps:
@@ -53,16 +48,12 @@ jobs:
           at: ~/project
       - run:
           name: "Run JMP plugin tests"
-          command: mvn -Dtest=top.archiem.jmp.JMPTest test jacoco:report
+          command: mvn -Dtest=top.archiem.jmp.MainTest test
       - store_test_results:
           path: target/surefire-reports
       - store_artifacts:
           path: target/surefire-reports
           destination: jmp-test-results
-      - persist_to_workspace:
-          root: ~/project
-          paths:
-            - target/site/jacoco
 
   maincommand-tests:
     executor: maven-executor
@@ -71,60 +62,27 @@ jobs:
           at: ~/project
       - run:
           name: "Run MainCommand tests"
-          command: mvn -Dtest=top.archiem.jmp.MainCommandTest test jacoco:report
+          command: mvn -Dtest=top.archiem.jmp.MainCommandTest test
       - store_test_results:
           path: target/surefire-reports
       - store_artifacts:
           path: target/surefire-reports
           destination: maincommand-test-results
-      - persist_to_workspace:
-          root: ~/project
-          paths:
-            - target/site/jacoco
 
-  textformat-tests:
+  textformat-format-tests:
     executor: maven-executor
     steps:
       - attach_workspace:
           at: ~/project
       - run:
-          name: "Run textFormat tests (includes colour & placeholder checks)"
-          command: mvn -Dtest=top.archiem.jmp.textFormatTest test jacoco:report
+          name: "Run textFormat formatting tests"
+          command: mvn -Dtest=top.archiem.jmp.textFormatTest test
       - store_test_results:
           path: target/surefire-reports
       - store_artifacts:
           path: target/surefire-reports
-          destination: textformat-test-results
-      - persist_to_workspace:
-          root: ~/project
-          paths:
-            - target/site/jacoco
+          destination: textformat-format-results
 
-  # --------------------------
-  # MERGE COVERAGE REPORTS
-  # --------------------------
-  merge-coverage:
-    executor: maven-executor
-    steps:
-      - attach_workspace:
-          at: ~/project
-      - run:
-          name: "Merge JaCoCo coverage reports"
-          command: |
-            mkdir -p target/merged-jacoco
-            find . -type f -name 'jacoco.xml' -exec cp {} target/merged-jacoco/ \;
-            echo "All coverage XML files collected into target/merged-jacoco"
-            echo "To combine them, use a tool like jacoco-merge or upload to Codecov."
-      - store_artifacts:
-          path: target/site/jacoco
-          destination: coverage-report
-      - store_artifacts:
-          path: target/merged-jacoco
-          destination: merged-coverage
-
-# --------------------------
-# WORKFLOW
-# --------------------------
 workflows:
   version: 2
   mvn-install-and-test:
@@ -143,12 +101,7 @@ workflows:
           requires:
             - install-maven
 
-      - textformat-tests:
+      - textformat-format-tests:
           requires:
             - install-maven
 
-      - merge-coverage:
-          requires:
-            - jmp-tests
-            - maincommand-tests
-            - textformat-tests
