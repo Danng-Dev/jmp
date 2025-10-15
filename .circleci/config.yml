@@ -48,7 +48,7 @@ jobs:
           at: ~/project
       - run:
           name: "Run JMP plugin tests"
-          command: mvn -Dtest=top.archiem.jmp.MainTest test
+          command: mvn -Dtest=top.archiem.jmp.JMPtest
       - store_test_results:
           path: target/surefire-reports
       - store_artifacts:
@@ -76,7 +76,7 @@ jobs:
           at: ~/project
       - run:
           name: "Run textFormat formatting tests"
-          command: mvn -Dtest=top.archiem.jmp.textFormatTest test
+          command: mvn -Dtest=top.archiem.jmp.TextFormatTest test
       - store_test_results:
           path: target/surefire-reports
       - store_artifacts:
