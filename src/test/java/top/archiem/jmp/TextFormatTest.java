@@ -9,7 +9,7 @@ import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class textFormatTest {
+class TextFormatTest {
 
     @Test
     void testFormatWithoutPAPI() {
