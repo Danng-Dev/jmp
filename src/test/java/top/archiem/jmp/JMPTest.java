@@ -1,4 +1,4 @@
-package top.archiem.jmp;
+2package top.archiem.jmp;
 
 import be.seeseemelk.mockbukkit.MockBukkit;
 import be.seeseemelk.mockbukkit.ServerMock;
