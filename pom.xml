@@ -81,7 +81,7 @@
                                 <package>top.archiem.jmp</package>
                             </treatAsPackage>
                             <treatAsClass> <!-- Classes starting with lower case letters. -->
-                                <class>top.archiem.jmp.textFormat</class>
+                                <class>top.archiem.jmp.TextFormat</class>
                             </treatAsClass>
                         </importOrder>
 
@@ -106,8 +106,12 @@
                     <relocations>
                         <relocation>
                             <pattern>org.bstats</pattern>
-                            <shadedPattern>top.archiem.jmp</shadedPattern>
+                            <shadedPattern>top.archiem.jmp.libraries.bstats</shadedPattern>
                         </relocation>
+                        <relocation>
+                            <pattern>de.themoep.minedown</pattern>
+                            <shadedPattern>top.archiem.jmp.libraries.minedown</shadedPattern>
+                         </relocation>
                     </relocations>
                 </configuration>
                 <executions>
@@ -160,6 +164,10 @@
             <id>placeholderapi</id>
             <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
         </repository>
+        <repository>
+            <id>minebench-repo</id>
+            <url>https://repo.minebench.de/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -196,33 +204,11 @@
             <artifactId>adventure-text-minimessage</artifactId>
             <version>4.17.0</version>
         </dependency>
-        <!-- Testing -->
-             <dependency>
-               <groupId>com.github.seeseemelk</groupId>
-               <artifactId>MockBukkit-v1.20</artifactId>
-               <version>${mockbukkit.version}</version>
-               <scope>test</scope>
-             </dependency>
-         
-             <dependency>
-               <groupId>org.junit.jupiter</groupId>
-               <artifactId>junit-jupiter</artifactId>
-               <version>${junit.jupiter.version}</version>
-               <scope>test</scope>
-             </dependency>
-         
-             <dependency>
-               <groupId>org.mockito</groupId>
-               <artifactId>mockito-core</artifactId>
-               <version>${mockito.version}</version>
-               <scope>test</scope>
-             </dependency>
-         
-             <dependency>
-               <groupId>org.mockito</groupId>
-               <artifactId>mockito-inline</artifactId>
-               <version>${mockito.version}</version>
-               <scope>test</scope>
-             </dependency>
+        <dependency>
+            <groupId>de.themoep</groupId>
+            <artifactId>minedown-adventure</artifactId>
+            <version>1.7.6-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 </project>

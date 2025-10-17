@@ -7,13 +7,14 @@ import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import de.themoep.minedown.adventure.*;
 
-public class textFormat {
+public class TextFormat {
   private final boolean papiEnabled;
   private final MiniMessage miniMessage = MiniMessage.miniMessage();
   private final LegacyComponentSerializer legacy = LegacyComponentSerializer.legacyAmpersand();
 
-  public textFormat(boolean papiEnabled) {
+  public TextFormat(boolean papiEnabled) {
     this.papiEnabled = papiEnabled;
   }
 
@@ -35,7 +36,9 @@ public class textFormat {
     // Step 3: Serialize back into MiniMessage string
     String miniMessageString = MiniMessage.miniMessage().serialize(component);
 
+    Component minedownApply = MineDown.parse(miniMessageString);
+
     // Step 4: Deserialize using MiniMessage to process tags
-    return miniMessage.deserialize(miniMessageString);
+    return minedownApply;
   }
 }

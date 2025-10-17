@@ -1,4 +1,6 @@
 package top.archiem.jmp;
 
-public class TitileHandler {
+@Deprecated
+public class TitleHandler {
+
 }

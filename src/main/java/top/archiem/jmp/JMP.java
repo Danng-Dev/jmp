@@ -2,9 +2,11 @@
 package top.archiem.jmp;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.logging.Logger;
 
 import org.bstats.bukkit.Metrics;
+
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -72,7 +74,7 @@ public final class JMP extends JavaPlugin implements Listener {
         .registerEventHandler(
             LifecycleEvents.COMMANDS,
             commands -> {
-              commands.registrar().register(MainCommand.MainCommand());
+              commands.registrar().register(MainCommand.JmpCommand());
             });
   }
 
@@ -87,7 +89,7 @@ public final class JMP extends JavaPlugin implements Listener {
   @EventHandler
   public void playerJoin(PlayerJoinEvent event) {
     Player player = event.getPlayer();
-    textFormat tf = new textFormat(papienabled);
+    TextFormat tf = new TextFormat(papienabled);
     if (msgPlayer) {
       player.sendMessage(tf.format(msgPlayerJoin, player));
     }
@@ -110,7 +112,7 @@ public final class JMP extends JavaPlugin implements Listener {
   @EventHandler
   public void playerLeave(PlayerQuitEvent event) throws IOException {
     Player player = event.getPlayer();
-    textFormat tf = new textFormat(papienabled);
+    TextFormat tf = new TextFormat(papienabled);
     if (player.hasPermission("JMP.silent")) {
       event.quitMessage(null);
     } else {
@@ -141,7 +143,7 @@ public final class JMP extends JavaPlugin implements Listener {
           "Please open an issue on our github"
               + " page(https://github.com/Danng-Dev/JoinMessagePluss/issues) with the provided"
               + " stack trace");
-      log.fine(e.getStackTrace().toString());
+      log.fine(Arrays.toString(e.getStackTrace()));
       return false;
     }
     return true;
