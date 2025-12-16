@@ -6,13 +6,14 @@
 
     <groupId>top.archiem</groupId>
     <artifactId>JoinMessagePlus</artifactId>
-    <version>3</version>
+    <version>4.0.0</version>
     <packaging>jar</packaging>
 
     <name>JoinMessagePlus</name>
 
     <properties>
-        <java.version>1.8</java.version>
+        <!-- build with a JDK that can handle classfile major version 65 (Java 21) -->
+        <java.version>21</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mockbukkit.version>3.6.0</mockbukkit.version>
         <junit.jupiter.version>5.10.2</junit.jupiter.version>
@@ -21,88 +22,68 @@
 
     <build>
         <plugins>
+            <!-- Enforce JDK version early with a clear error -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>3.6.0</version>
-                <configuration>
-                    <configLocation>google_checks.xml</configLocation>
-                    <consoleOutput>true</consoleOutput>
-                    <failsOnError>false</failsOnError>
-                </configuration>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.2.1</version>
                 <executions>
                     <execution>
-                        <phase>verify</phase>
+                        <id>enforce-java</id>
                         <goals>
-                            <goal>checkstyle</goal>
+                            <goal>enforce</goal>
                         </goals>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <!-- require Java 21 or newer -->
+                                    <version>[21,)</version>
+                                </requireJavaVersion>
+                            </rules>
+                            <fail>true</fail>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- ensure the compiler uses the requested Java release -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <release>${java.version}</release>
+                </configuration>
+            </plugin>
+
+            <!-- simplified Spotless config (valid XML, avoid complex keys that produced parse issues) -->
             <plugin>
                 <groupId>com.diffplug.spotless</groupId>
                 <artifactId>spotless-maven-plugin</artifactId>
                 <version>2.46.1</version>
                 <configuration>
                     <java>
-                        <!-- These are the defaults, you can override if you want -->
                         <includes>
                             <include>src/main/java/**/*.java</include>
                             <include>src/test/java/**/*.java</include>
                         </includes>
-
-                        <cleanthat>
-                            <version>2.23</version>                          <!-- optional version of Cleanthat -->
-                            <mutators>
-                                <mutator>SafeAndConsensual</mutator>          <!-- optional. Default to 'SafeAndConsensual' to include all mutators -->
-                            </mutators>
-                            <mutators>            <!-- List of mutators: https://github.com/solven-eu/cleanthat/blob/master/MUTATORS.generated.MD -->
-                                <mutator>LiteralsFirstInComparisons</mutator> <!-- You may alternatively list the requested mutators -->
-                            </mutators>
-                            <excludedMutators>
-                                <excludedMutator>OptionalNotEmpty</excludedMutator> <!-- You can discard specific rules -->
-                            </excludedMutators>
-                            <includeDraft>false</includeDraft>              <!-- optional. Default to false, not to include draft mutators from Composite mutators -->
-                        </cleanthat>
-
                         <googleJavaFormat>
-                            <version>1.17.0</version>                      <!-- optional, 1.8 is the minimum supported version for Java 11 -->
-                            <style>GOOGLE</style>                       <!-- or AOSP (optional) -->
-                            <reflowLongStrings>true</reflowLongStrings>
-                            <formatJavadoc>true</formatJavadoc>
+                            <version>1.17.0</version>
+                            <style>GOOGLE</style>
                         </googleJavaFormat>
-                        <importOrder /> <!-- standard import order -->
-                        <importOrder>  <!-- or a custom ordering -->
-                            <wildcardsLast>false</wildcardsLast> <!-- Optional, default false. Sort wildcard import after specific imports -->
-                            <order>java|javax,org,com,com.diffplug,,\#com.diffplug,\#</order>  <!-- or use <file>${project.basedir}/eclipse.importorder</file> -->
-                            <!-- you can use an empty string for all the imports you didn't specify explicitly, '|' to join group without blank line, and '\#` prefix for static imports. -->
-                            <semanticSort>false</semanticSort> <!-- Optional, default false. Sort by package, then class, then member (for static imports). Splitting is based on common conventions (packages are lower case, classes start with upper case). Use <treatAsPackage> and <treatAsClass> for exceptions. -->
-                            <treatAsPackage> <!-- Packages starting with upper case letters. -->
-                                <package>top.archiem.jmp</package>
-                            </treatAsPackage>
-                            <treatAsClass> <!-- Classes starting with lower case letters. -->
-                                <class>top.archiem.jmp.TextFormat</class>
-                            </treatAsClass>
-                        </importOrder>
-
-                        <removeUnusedImports>
-                            <engine>google-java-format</engine>    <!-- optional. Defaults to `google-java-format`. Can be switched to `cleanthat-javaparser-unnecessaryimport` (e.g. to process JDK17 source files with a JDK8+ Runtime) -->
-                        </removeUnusedImports> <!-- self-explanatory -->
-                        <!-- drop any import ending with '*' -->
-
-                        <formatAnnotations />  <!-- fixes formatting of type annotations, see below -->
-
-                        <licenseHeader>
-                            <content>/* (C)$YEAR */</content>  <!-- or <file>${project.basedir}/license-header</file> -->
-                        </licenseHeader>
                     </java>
                 </configuration>
             </plugin>
+
+            <!-- shade plugin: upgraded, filters and service merger -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.6.1</version>
                 <configuration>
+                    <!-- avoid dependency-reduced-pom while we validate shading -->
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
+
                     <relocations>
                         <relocation>
                             <pattern>org.bstats</pattern>
@@ -111,9 +92,28 @@
                         <relocation>
                             <pattern>de.themoep.minedown</pattern>
                             <shadedPattern>top.archiem.jmp.libraries.minedown</shadedPattern>
-                         </relocation>
+                        </relocation>
                     </relocations>
+
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <!-- module-info and signature files frequently cause shade merge problems -->
+                                <exclude>module-info.class</exclude>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+
+                    <transformers>
+                        <!-- merge META-INF/services safely -->
+                        <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                    </transformers>
                 </configuration>
+
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -123,26 +123,28 @@
                     </execution>
                 </executions>
             </plugin>
+
             <plugin>
-               <groupId>org.jacoco</groupId>
-               <artifactId>jacoco-maven-plugin</artifactId>
-               <version>0.8.12</version>
-               <executions>
-                 <execution>
-                   <goals>
-                     <goal>prepare-agent</goal>
-                   </goals>
-                 </execution>
-                 <execution>
-                   <id>report</id>
-                   <phase>test</phase>
-                   <goals>
-                     <goal>report</goal>
-                   </goals>
-                 </execution>
-               </executions>
-             </plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.12</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
+
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -168,6 +170,10 @@
             <id>minebench-repo</id>
             <url>https://repo.minebench.de/</url>
         </repository>
+        <repository>
+            <id>codemc</id>
+            <url>https://repo.codemc.org/repository/maven-public/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -182,6 +188,13 @@
             <artifactId>placeholderapi</artifactId>
             <version>2.11.6</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.xephi</groupId>
+            <artifactId>authme</artifactId>
+            <version>5.6.0</version>
+            <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>
@@ -203,12 +216,6 @@
             <groupId>net.kyori</groupId>
             <artifactId>adventure-text-minimessage</artifactId>
             <version>4.17.0</version>
-        </dependency>
-        <dependency>
-            <groupId>de.themoep</groupId>
-            <artifactId>minedown-adventure</artifactId>
-            <version>1.7.6-SNAPSHOT</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>

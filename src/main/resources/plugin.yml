@@ -1,5 +1,5 @@
 name: JMP
-version: '1.0-SNAPSHOT'
+version: '4.0.0'
 main: top.archiem.jmp.JMP
 api-version: '1.21'
 prefix: JMP
@@ -21,13 +21,16 @@ permissions:
     jmp.silent:
       default: false
       description: "No leave/join messages for this person"
+    jmp.notify:
+      default: op
+      description: "Allows you to recive version and other notifications from the plugin"
 
 commands:
   jmp:
     permission: JMP.cmd
     aliases: [joinmessageplus]
-    usage: "/joinmessageplus <arg>"
+    usage: "/jmp <arg>"
     permission-message: "You do not have permission to use this command"
     description: "Join message plus command"
 
-softdepend: [PlaceholderAPI]
+softdepend: [PlaceholderAPI, AuthMe]

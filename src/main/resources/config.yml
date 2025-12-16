@@ -1,17 +1,69 @@
+# =====================================================
+# Join Message Plugin — Main Configuration
+# Available placeholder:
+#   %player% → Player's username
+# =====================================================
+
 main:
-    sendmessagetoplayer: true
 
-    messages:
-      join: "&aWelcome %player% to the server!"
-      leave: "&c%player% has left the server!"
+  # ---------------------------------------------------
+  # General behavior
+  # ---------------------------------------------------
 
-    messageplayer:
-      join: "&eHello %player%, enjoy your stay!"
-      leave: "&eGoodbye %player%, see you next time!"
-      silent: "<gold> %player% you ave silentjoin enabled"
+  # Send a private message to the player when they join
+  send-message-to-player: true
 
-    premium:
-      "1": "&6[VIP] %player% has joined the game!"
-      "2": "&b[ELITE] %player% has joined the game!"
-      "3": "&d[LEGEND] %player% has joined the game!"
-      "4": "&c[OWNER] %player% has joined the server!"
+  # Enable a special message when a player joins for the first time
+  enable-first-join-message: false
+
+  # Send a private message to the player on first join
+  send-first-join-message-to-player: false
+
+
+  # ---------------------------------------------------
+  # Public join / leave messages (broadcast)
+  # ---------------------------------------------------
+  messages:
+    join: "<yellow> Welcome %player% to the server!</yellow>"
+    leave: "<blue> %player% has left the server!"
+    first: "<gold> %player% has joined the server for the first time!"
+
+
+  # ---------------------------------------------------
+  # Private messages sent directly to the player
+  # ---------------------------------------------------
+  player-messages:
+    join: "<green>Hello %player%, enjoy your stay!"
+    leave: "<green>Goodbye %player%, see you next time!"
+    first: "<green>Enjoy the server %player%! Don't forget to read the rules."
+
+    # Sent if the player has silent join enabled
+    silent: "<gold>You have silent join enabled, %player%."
+
+
+  # ---------------------------------------------------
+  # Permission-based join messages
+  # Permission format: jmp.premium.<number>
+  # Example: jmp.premium.1
+  # ---------------------------------------------------
+  premium-messages:
+    "1": "&6[VIP] %player% has joined the game!"
+    "2": "&b[ELITE] %player% has joined the game!"
+    "3": "&d[LEGEND] %player% has joined the game!"
+    "4": "<red>[OWNER] %player% has joined the server!"
+
+
+# =====================================================
+# AuthMe Integration
+# =====================================================
+authme:
+
+  # Enable AuthMe integration
+  enabled: false
+
+  # Delay join messages until the player logs in
+  delay-join-messages-until-login: false
+
+  # Message shown if join messages are delayed
+  login-required-message: "<yellow>Greetings %player%, please log in to join the server."
+

@@ -1,13 +1,14 @@
 /* (C)2025 */
-package top.archiem.jmp;
+package top.archiem.jmp.commands;
 
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import io.papermc.paper.command.brigadier.Commands;
-import org.bukkit.plugin.java.JavaPlugin;
+import top.archiem.jmp.JMP;
 
 public class MainCommand {
-  protected static LiteralCommandNode JmpCommand() {
+  public static LiteralCommandNode JmpCommand() {
+      JMP jmp = JMP.getPlugin(JMP.class);
     return
         (
                 Commands.literal("jmp")
@@ -18,7 +19,10 @@ public class MainCommand {
                                         sender -> sender.getSender().hasPermission("JMP.cmd")))
                             .executes(
                                 ctx -> {
-                                    JavaPlugin.getPlugin(JMP.class).refreshConfig();
+                                    boolean success = jmp.refreshConfig();
+                                    if(success){
+                                        jmp.log.info("Config Reloaded Successfully");
+                                    }
                                   return 1;
                                 })))
             .build();
