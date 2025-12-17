@@ -33,4 +33,4 @@ commands:
     permission-message: "You do not have permission to use this command"
     description: "Join message plus command"
 
-softdepend: [PlaceholderAPI, AuthMe]
+softdepend: [PlaceholderAPI, AuthMe, LuckPerms]
