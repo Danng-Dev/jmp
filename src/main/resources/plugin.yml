@@ -1,5 +1,5 @@
 name: JMP
-version: '4.0.0'
+version: '4.1.0'
 main: top.archiem.jmp.JMP
 api-version: '1.21'
 prefix: JMP

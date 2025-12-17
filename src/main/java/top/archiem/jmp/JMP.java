@@ -22,6 +22,7 @@ import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 
 import top.archiem.jmp.commands.MainCommand;
 import top.archiem.jmp.hooks.AuthMeHook;
+import top.archiem.jmp.hooks.LuckPermsHook;
 import top.archiem.jmp.listeners.AuthMeListener;
 import top.archiem.jmp.util.TextFormat;
 import top.archiem.jmp.util.modrinth.Modrinth;
@@ -64,8 +65,11 @@ public class JMP extends JavaPlugin implements Listener {
   //Easier than double-checking
   private boolean lockjmsg;
 
+  private boolean lpEnabled;
+  public LuckPermsHook lpHook;
+
   //Version Checking, change with each version!
-  private String version = "4.0.0";
+  private String version = "4.1.0";
 
   @Override
   public void onEnable() {
@@ -97,6 +101,12 @@ public class JMP extends JavaPlugin implements Listener {
     } else {
       log.info("AuthMe not detected");
     }
+    lpEnabled = checkDependency("LuckPerms");
+    if(lpEnabled){
+      lpHook = new LuckPermsHook();
+      lpHook.initializeHook();
+      log.info("LuckPerms is installed, you can now use the prefix placeholder");
+    }
     this.log.info("Loading Config");
     saveDefaultConfig();
     try {
@@ -123,15 +133,11 @@ public class JMP extends JavaPlugin implements Listener {
       log.severe(e.getMessage());
       pluginManager.disablePlugin(this);
     }
-    this.log.info("Loaded config");
     if (!amenabled &&  authenabled){log.warning("AuthMe is installed, but the config is disabled.");}
     this.log.info("Loading listener");
     pluginManager.registerEvents(this, this);
     if(amenabled && authenabled){ registerAuthMeComponents(); }
-    this.log.info("Registered Listener");
-    this.log.info("Loading bstats");
     Metrics metrics = new Metrics(this, bstatsId);
-    this.log.info("Loaded bstats");
     this.log.info("Loading commands");
     this.getLifecycleManager()
         .registerEventHandler(

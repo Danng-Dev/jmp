@@ -2,6 +2,7 @@
 # Join Message Plugin — Main Configuration
 # Available placeholder:
 #   %player% → Player's username
+#   %lp_prefix% -> Player's LuckPerms prefix(if installed)
 # =====================================================
 
 main:
