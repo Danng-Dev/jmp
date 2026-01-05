@@ -25,6 +25,7 @@ import top.archiem.jmp.hooks.AuthMeHook;
 import top.archiem.jmp.hooks.LuckPermsHook;
 import top.archiem.jmp.listeners.AuthMeListener;
 import top.archiem.jmp.util.TextFormat;
+import top.archiem.jmp.util.TitleHandler;
 import top.archiem.jmp.util.modrinth.Modrinth;
 
 public class JMP extends JavaPlugin implements Listener {
@@ -57,6 +58,11 @@ public class JMP extends JavaPlugin implements Listener {
   private String lockmsg;
   private String registerMessage;
   private boolean sendregistermsg;
+
+  private boolean titlesEnabled;
+  private boolean titleOnFirst;
+  private String title;
+  private String subtitle;
 
   private int bstatsId = 22405;
 
@@ -124,6 +130,11 @@ public class JMP extends JavaPlugin implements Listener {
       msgFirstJoin = config.getBoolean("main.enable-first-join-message");
       firstMsgPlayer = config.getBoolean("main.send-first-join-message-to-player");
 
+      titlesEnabled = config.getBoolean("main.titles.enabled");
+      titleOnFirst = config.getBoolean("main.titles.only-on-first-join");
+      title = config.getString("main.titles.title");
+      subtitle = config.getString("main.titles.subtitle");
+
       amenabled = config.getBoolean("authme.enabled");
       amlock = config.getBoolean("authme.delay-join-messages-until-login");
       lockmsg = config.getString("authme.login-required-message");
@@ -178,6 +189,7 @@ public class JMP extends JavaPlugin implements Listener {
   public void playerJoin(PlayerJoinEvent event) {
     Player player = event.getPlayer();
     TextFormat tf = new TextFormat(papienabled);
+    TitleHandler titles = new TitleHandler(player);
       if (!lockjmsg) {
 
           if (!player.hasPlayedBefore()) {
@@ -186,6 +198,9 @@ public class JMP extends JavaPlugin implements Listener {
             }
             if(firstMsgPlayer){
               player.sendMessage(tf.format(firstPlayerMsg, player));
+            }
+            if(titlesEnabled && !player.hasPermission("JMP.silent")){
+              player.showTitle(titles.titleBuilder(title, subtitle, null));
             }
           } else  {
             if (msgPlayer) {
@@ -204,6 +219,9 @@ public class JMP extends JavaPlugin implements Listener {
               event.joinMessage(tf.format(config.getString("main.premium-messages.4"), player));
             } else {
               event.joinMessage(tf.format(joinMsg, player));
+            }
+            if(titlesEnabled && !titleOnFirst && !player.hasPermission("JMP.silent")){
+              player.showTitle(titles.titleBuilder(title, subtitle, null));
             }
           }
       } else {

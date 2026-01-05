@@ -53,9 +53,22 @@ main:
     "3": "&d[LEGEND] %player% has joined the game!"
     "4": "<red>[OWNER] %player% has joined the server!"
 
+  # ----------------------------------------------------
+  # Show a title on the player's screen
+  # Only On First Join: Weather to only show the title if the player has not played before
+  # Title: Large text at the centre of the screen
+  # Subtitle: Smaller text below it
+  # ----------------------------------------------------
+  titles:
+    enabled: false
+    only-on-first-join: true
+    title: "Welcome %player%"
+    subtitle: "To the server of nod"
+
 
 # =====================================================
 # AuthMe Integration
+# Needless to say will only work if authme is installed
 # =====================================================
 authme:
 
