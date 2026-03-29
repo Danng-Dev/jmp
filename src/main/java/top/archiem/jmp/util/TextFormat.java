@@ -16,7 +16,7 @@ import top.archiem.jmp.hooks.LuckPermsHook;
 public class TextFormat {
   private final boolean papiEnabled;
   private final MiniMessage miniMessage = MiniMessage.miniMessage();
-  private final LegacyComponentSerializer legacy = LegacyComponentSerializer.legacyAmpersand();
+
 
   public TextFormat(boolean papiEnabled) {
     this.papiEnabled = papiEnabled;
@@ -25,7 +25,7 @@ public class TextFormat {
   public LuckPermsHook lpHook = JMP.getPlugin(JMP.class).lpHook;
 
   private String applyPlaceholders(String text, Player player) {
-    final String defaultname = text.replace("%player%", player.getName());
+    final String defaultname = text.replace("%player%", "hi");
     if (papiEnabled) {
       return PlaceholderAPI.setPlaceholders(player, defaultname);
     } else {
