@@ -12,6 +12,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
+import java.net.ConnectException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -53,69 +54,83 @@ public class Modrinth implements Listener {
     }
 
     private static void loadVersion() {
-        HttpRequest request = HttpRequest.newBuilder(URI.create(VERSIONS_URL))
-                .GET()
-                .build();
+        try {
+            HttpRequest request = HttpRequest.newBuilder(URI.create(VERSIONS_URL))
+                    .GET()
+                    .build();
 
-        HttpClient.newHttpClient().sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenAccept(response -> {
-                    if (response.statusCode() != 200) {
-                        plugin.getLogger().warning("Failed to fetch Modrinth versions. Status code: " + response.statusCode());
-                        return;
-                    }
+            HttpClient.newHttpClient().sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                    .thenAccept(response -> {
+                        if (response.statusCode() != 200) {
+                            plugin.getLogger().warning("Failed to fetch Modrinth versions. Status code: " + response.statusCode());
+                            return;
+                        }
 
-                    Gson gson = new GsonBuilder()
-                            .setDateFormat(DateFormat.FULL, DateFormat.FULL)
-                            .create();
+                        Gson gson = new GsonBuilder()
+                                .setDateFormat(DateFormat.FULL, DateFormat.FULL)
+                                .create();
 
-                    List<ModrinthVersion> versions = gson.fromJson(
-                            response.body(),
-                            new TypeToken<List<ModrinthVersion>>() {}.getType()
-                    );
+                        List<ModrinthVersion> versions = gson.fromJson(
+                                response.body(),
+                                new TypeToken<List<ModrinthVersion>>() {}.getType()
+                        );
 
-                    ModrinthVersion latestVersion = findLatestVersion(versions);
-                    if (latestVersion == null) {
-                        plugin.getLogger().info("No new Modrinth version found or could not determine latest.");
-                        return;
-                    }
+                        ModrinthVersion latestVersion = findLatestVersion(versions);
+                        if (latestVersion == null) {
+                            plugin.getLogger().info("No new Modrinth version found or could not determine latest.");
+                            return;
+                        }
 
-                    // Assuming plugin.getDescription().getVersion() returns the current plugin version string
-                    SemanticVersion currentPluginVersion = SemanticVersion.fromString(plugin.getDescription().getVersion());
+                        // Assuming plugin.getDescription().getVersion() returns the current plugin version string
+                        SemanticVersion currentPluginVersion = SemanticVersion.fromString(plugin.getDescription().getVersion());
 
-                    if (latestVersion.getVersionNumber().compareTo(currentPluginVersion) <= 0) {
-                        plugin.getLogger().info("Current version is up to date or newer.");
-                        return;
-                    }
+                        if (latestVersion.getVersionNumber().compareTo(currentPluginVersion) <= 0) {
+                            plugin.getLogger().info("Current version is up to date or newer.");
+                            return;
+                        }
 
-                    newVersion = latestVersion;
+                        newVersion = latestVersion;
 
-                    plugin.getLogger().log(Level.SEVERE,
-                            StringUtil.trimMargin(
-                                    """
-                                    |-----------------{  Join Message Plus Update }-----------------
-                                    |    A new version of  Join Message Plus is available!
-                                    |    Current version: %s
-                                    |    New version:     %s
-                                    |    Download it at:  %s
-                                    |------------------------------------------------------
-                                    """.formatted(
-                                            plugin.getDescription().getVersion(),
-                                            latestVersion.getVersionNumber().toString(),
-                                            latestVersion.getUrl()
-                                    )
-                            )
-                    );
+                        plugin.getLogger().log(Level.SEVERE,
+                                StringUtil.trimMargin(
+                                        """
+                                        |-----------------{  Join Message Plus Update }-----------------
+                                        |    A new version of  Join Message Plus is available!
+                                        |    Current version: %s
+                                        |    New version:     %s
+                                        |    Download it at:  %s
+                                        |------------------------------------------------------
+                                        """.formatted(
+                                                plugin.getDescription().getVersion(),
+                                                latestVersion.getVersionNumber().toString(),
+                                                latestVersion.getUrl()
+                                        )
+                                )
+                        );
 
-                    // Notify all online players on the main thread
-                    Bukkit.getScheduler().runTask(plugin, () -> {
-                        Bukkit.getOnlinePlayers().forEach(Modrinth::notifyPlayer);
+                        // Notify all online players on the main thread
+                        Bukkit.getScheduler().runTask(plugin, () -> {
+                            Bukkit.getOnlinePlayers().forEach(Modrinth::notifyPlayer);
+                        });
+
+                    })
+                    .exceptionally(e -> {
+                        plugin.getLogger().log(Level.SEVERE, "Error fetching Modrinth versions: " + e.getMessage(), e);
+                        return null;
                     });
-
-                })
-                .exceptionally(e -> {
-                    plugin.getLogger().log(Level.SEVERE, "Error fetching Modrinth versions: " + e.getMessage(), e);
-                    return null;
+        } catch (Exception e){
+            if(e instanceof ConnectException){
+                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                    String message = "WI-FI disabled. Version checking skipped...";
+                    plugin.getLogger().warning(message);
                 });
+            }else {
+                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                    String message = "Caught Exception during version checking: " + e.getStackTrace().toString();
+                    plugin.getLogger().severe(message);
+                });
+            }
+        }
     }
 
     private static ModrinthVersion findLatestVersion(List<ModrinthVersion> versions) {

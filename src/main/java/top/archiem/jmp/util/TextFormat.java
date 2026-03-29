@@ -54,17 +54,21 @@ public class TextFormat {
   }
 
   private String getLuckPermsPrefix(Player player){
-    if(lpHook.isHookActive()){
-      LuckPerms luckPerms = lpHook.getHook();
-      User user = luckPerms.getPlayerAdapter(Player.class).getUser(player);
-      CachedMetaData metaData = user.getCachedData().getMetaData();
+      if (lpHook != null) {
+          if(lpHook.isHookActive()){
+            LuckPerms luckPerms = lpHook.getHook();
+            User user = luckPerms.getPlayerAdapter(Player.class).getUser(player);
+            CachedMetaData metaData = user.getCachedData().getMetaData();
 
-      String prefix = metaData.getPrefix();
+            String prefix = metaData.getPrefix();
 
-      return prefix != null ? prefix : "";
-    } else{
-      return null;
-    }
+            return prefix != null ? prefix : "";
+          } else{
+            return "";
+          }
+      } else {
+        return "";
+      }
   }
 
 }
