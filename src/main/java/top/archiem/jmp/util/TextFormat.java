@@ -9,7 +9,6 @@ import org.bukkit.entity.Player;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import top.archiem.jmp.JMP;
 import top.archiem.jmp.hooks.LuckPermsHook;
 
@@ -22,7 +21,7 @@ public class TextFormat {
     this.papiEnabled = papiEnabled;
   }
 
-  public LuckPermsHook lpHook = JMP.getPlugin(JMP.class).lpHook;
+  public static final LuckPermsHook lpHook = JMP.getPlugin(JMP.class).lpHook;
 
   private String applyPlaceholders(String text, Player player) {
     final String defaultname = text.replace("%player%", "hi");
@@ -35,7 +34,7 @@ public class TextFormat {
 
   private String applyPrefix(String text, Player player){
     String prefix = getLuckPermsPrefix(player);
-    if(String.valueOf(prefix) == null){
+    if(prefix == null){
       return text;
     } else {
       return text.replace("%lp_prefix%", prefix);
@@ -46,7 +45,11 @@ public class TextFormat {
     // Step 1: Apply placeholders
     String withPlaceholders = applyPlaceholders(raw, player);
 
-    String withPrefix = applyPrefix(withPlaceholders, player);
+    String withPrefix = withPlaceholders;
+
+    if(getLuckPermsPrefix(player) != null){
+      withPrefix = applyPrefix(withPlaceholders, player);
+    }
 
     Component minimessageparsed = miniMessage.deserialize(withPrefix);
 
@@ -60,14 +63,12 @@ public class TextFormat {
             User user = luckPerms.getPlayerAdapter(Player.class).getUser(player);
             CachedMetaData metaData = user.getCachedData().getMetaData();
 
-            String prefix = metaData.getPrefix();
-
-            return prefix != null ? prefix : "";
+            return  metaData.getPrefix();
           } else{
-            return "";
+            return null;
           }
       } else {
-        return "";
+        return null;
       }
   }
 

@@ -18,6 +18,8 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.yaml.snakeyaml.error.YAMLException;
 
+import fr.xephi.authme.events.LoginEvent;
+
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 
 import top.archiem.jmp.commands.MainCommand;
@@ -27,6 +29,7 @@ import top.archiem.jmp.listeners.AuthMeListener;
 import top.archiem.jmp.util.TextFormat;
 import top.archiem.jmp.util.TitleHandler;
 import top.archiem.jmp.util.modrinth.Modrinth;
+
 
 public class JMP extends JavaPlugin implements Listener {
 
@@ -54,7 +57,7 @@ public class JMP extends JavaPlugin implements Listener {
 
 
   private boolean amlock = false;
-  private boolean amenabled = false;
+  private boolean authinstalled = false;
   private String lockmsg;
   private String registerMessage;
   private boolean sendregistermsg;
@@ -135,7 +138,7 @@ public class JMP extends JavaPlugin implements Listener {
       title = config.getString("main.titles.title");
       subtitle = config.getString("main.titles.subtitle");
 
-      amenabled = config.getBoolean("authme.enabled");
+      authinstalled = config.getBoolean("authme.enabled");
       amlock = config.getBoolean("authme.delay-join-messages-until-login");
       lockmsg = config.getString("authme.login-required-message");
 
@@ -144,11 +147,11 @@ public class JMP extends JavaPlugin implements Listener {
       log.severe(e.getMessage());
       pluginManager.disablePlugin(this);
     }
-    if (!amenabled &&  authenabled){log.warning("AuthMe is installed, but the config is disabled.");}
+    if (!authinstalled &&  authenabled){log.warning("AuthMe is installed, but the config is disabled.");}
     this.log.info("Loading listener");
     pluginManager.registerEvents(this, this);
-    if(amenabled && authenabled){ registerAuthMeComponents(); }
-    Metrics metrics = new Metrics(this, bstatsId);
+    if(authinstalled && authenabled){ registerAuthMeComponents(); }
+    new Metrics(this, bstatsId);
     this.log.info("Loading commands");
     this.getLifecycleManager()
         .registerEventHandler(
@@ -156,7 +159,7 @@ public class JMP extends JavaPlugin implements Listener {
             commands -> {
               commands.registrar().register(MainCommand.JmpCommand());
             });
-    if (!authenabled){ lockjmsg = false;} else if(!amenabled){lockjmsg = false;} else {lockjmsg = true;}
+    if (!authenabled){ lockjmsg = false;} else if(!authinstalled){lockjmsg = false;} else {lockjmsg = true;}
   }
 
 
@@ -177,7 +180,7 @@ public class JMP extends JavaPlugin implements Listener {
   @Override
   public void onDisable() {
     this.log.info("Disabling...");
-    if(authenabled){
+    if(authinstalled){
       removeAuthMeHook();
     }
     if (this.errorConfig) {
@@ -313,4 +316,19 @@ public class JMP extends JavaPlugin implements Listener {
     return sendregistermsg;
   }
 
+  public boolean isTitlesEnabled() {
+    return titlesEnabled;
+  }
+
+  public boolean isTitleOnFirst() {
+    return titleOnFirst;
+  }
+
+  public String getTitle() {
+    return title;
+  }
+
+  public String getSubtitle() {
+    return subtitle;
+  }
 }

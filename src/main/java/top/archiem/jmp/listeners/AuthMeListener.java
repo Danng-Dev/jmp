@@ -9,20 +9,26 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import top.archiem.jmp.JMP;
 import top.archiem.jmp.util.TextFormat;
+import top.archiem.jmp.util.TitleHandler;
 
 public class AuthMeListener implements Listener {
 
     JMP jmp = JMP.getPlugin(JMP.class);
 
-    private boolean msgPlayer = jmp.isMsgPlayer();
-    private String leaveMsg = jmp.getLeaveMsg();
-    private String joinMsg = jmp.getJoinMsg();
-    private String silentMsg = jmp.getSilentMsg();
-    private String msgPlayerJoin = jmp.getMsgPlayerJoin();
-    private String msgPlayerLeave = jmp.getMsgPlayerLeave();
+    private final boolean msgPlayer = jmp.isMsgPlayer();
+    private final String leaveMsg = jmp.getLeaveMsg();
+    private final String joinMsg = jmp.getJoinMsg();
+    private final String silentMsg = jmp.getSilentMsg();
+    private final String msgPlayerJoin = jmp.getMsgPlayerJoin();
+    private final String msgPlayerLeave = jmp.getMsgPlayerLeave();
+    private final String title = jmp.getTitle();
+    private final String subtitle = jmp.getSubtitle();
+    private final boolean titlesEnabled = jmp.isTitlesEnabled();
+    private final boolean titlsOnlyOnFirst = jmp.isTitleOnFirst();
+    private final String silentPerm = "JMP.silent";
     
-    private boolean sendRegisterMsg = jmp.isSendregistermsg();
-    private String registerMessage = jmp.getRegisterMessage();
+    private final boolean sendRegisterMsg = jmp.isSendregistermsg();
+    private final String registerMessage = jmp.getRegisterMessage();
 
     FileConfiguration config = jmp.getConfig();
 
@@ -30,11 +36,15 @@ public class AuthMeListener implements Listener {
     public void onLogin(LoginEvent event){
         try {
             Player player = event.getPlayer();
+            TitleHandler titles = new TitleHandler(player);
             TextFormat tf = new TextFormat(jmp.papienabled);
             if (msgPlayer) {
                 player.sendMessage(tf.format(msgPlayerJoin, player));
             }
-            if (player.hasPermission("JMP.silent")) {
+            if(!titlsOnlyOnFirst && titlesEnabled && !player.hasPermission(silentPerm)){
+                player.showTitle(titles.titleBuilder(title, subtitle, null));
+            }
+            if (player.hasPermission(silentPerm)) {
                 jmp.getServer().sendMessage(null);
                 player.sendMessage(tf.format(silentMsg, player));
             } else if (player.hasPermission("JMP.premium.1")) {
@@ -56,13 +66,18 @@ public class AuthMeListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onRegister(RegisterEvent event){
+        
         try {
             Player player = event.getPlayer();
+            TitleHandler titles = new TitleHandler(player);
             TextFormat tf = new TextFormat(jmp.papienabled);
             if (msgPlayer) {
                 player.sendMessage(tf.format(msgPlayerJoin, player));
             }
-            if (player.hasPermission("JMP.silent")) {
+            if(titlesEnabled && !player.hasPermission(silentPerm)){
+                player.showTitle(titles.titleBuilder(title, subtitle, null));
+            }
+            if (player.hasPermission(silentPerm)) {
                 jmp.getServer().sendMessage(null);
                 player.sendMessage(tf.format(silentMsg, player));
             } else if (player.hasPermission("JMP.premium.1")) {

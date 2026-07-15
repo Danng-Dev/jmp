@@ -1,7 +1,7 @@
 name: JMP
 version: '4.2.0'
 main: top.archiem.jmp.JMP
-api-version: '1.21'
+api-version: '26.1.2'
 prefix: JMP
 authors: [ DanngDev ]
 description: A plugin to change the join mssage on your server
