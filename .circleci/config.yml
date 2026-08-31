@@ -1,0 +1,107 @@
+version: 2.1
+
+executors:
+  maven-executor:
+    docker:
+      - image: cimg/openjdk:21.0.8
+    working_directory: ~/project
+
+jobs:
+  install-maven:
+    executor: maven-executor
+    steps:
+      - checkout
+      - run:
+          name: "Fix ca-certificates-java"
+          command: |
+            sudo rm -rf /etc/ssl/certs/java/cacerts
+            sudo apt-get update
+            sudo apt-get install -y --reinstall ca-certificates-java
+            sudo update-ca-certificates -f
+      - run:
+          name: "Install Maven"
+          command: sudo apt-get install -y maven
+      - persist_to_workspace:
+          root: ~/project
+          paths: .
+
+  checkstyle:
+    executor: maven-executor
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: "Run Checkstyle"
+          command: mvn checkstyle:check
+      - store_artifacts:
+          path: target
+          destination: checkstyle-results
+
+  # --------------------------
+  # TEST JOBS
+  # --------------------------
+
+  jmp-tests:
+    executor: maven-executor
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: "Run JMP plugin tests"
+          command: mvn -Dtest=top.archiem.jmp.JMPtest
+      - store_test_results:
+          path: target/surefire-reports
+      - store_artifacts:
+          path: target/surefire-reports
+          destination: jmp-test-results
+
+  maincommand-tests:
+    executor: maven-executor
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: "Run MainCommand tests"
+          command: mvn -Dtest=top.archiem.jmp.MainCommandTest test
+      - store_test_results:
+          path: target/surefire-reports
+      - store_artifacts:
+          path: target/surefire-reports
+          destination: maincommand-test-results
+
+  textformat-format-tests:
+    executor: maven-executor
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: "Run textFormat formatting tests"
+          command: mvn -Dtest=top.archiem.jmp.TextFormatTest test
+      - store_test_results:
+          path: target/surefire-reports
+      - store_artifacts:
+          path: target/surefire-reports
+          destination: textformat-format-results
+
+workflows:
+  version: 2
+  mvn-install-and-test:
+    jobs:
+      - install-maven
+
+      - checkstyle:
+          requires:
+            - install-maven
+
+      - jmp-tests:
+          requires:
+            - install-maven
+
+      - maincommand-tests:
+          requires:
+            - install-maven
+
+      - textformat-format-tests:
+          requires:
+            - install-maven
+
